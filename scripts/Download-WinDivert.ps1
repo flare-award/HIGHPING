@@ -24,22 +24,42 @@ $extract = Join-Path $work 'extract'
 $destination = [IO.Path]::GetFullPath($Destination)
 $notices = Join-Path $destination 'ThirdPartyNotices'
 
+function Get-PinnedDownload([string] $Uri, [string] $OutFile, [string] $Description) {
+    for ($attempt = 1; $attempt -le 3; $attempt++) {
+        try {
+            Remove-Item -LiteralPath $OutFile -Force -ErrorAction SilentlyContinue
+            Invoke-WebRequest -Uri $Uri -OutFile $OutFile -UseBasicParsing -TimeoutSec 180
+            return
+        }
+        catch {
+            if ($attempt -eq 3) {
+                throw "Could not download $Description after $attempt attempts from ${Uri}: $($_.Exception.Message)"
+            }
+
+            Write-Warning "Download attempt $attempt for $Description failed: $($_.Exception.Message)"
+            Start-Sleep -Seconds (2 * $attempt)
+        }
+    }
+}
+
 try {
     New-Item -ItemType Directory -Force -Path $work, $extract, $destination, $notices | Out-Null
     Write-Host "Downloading the pinned official WinDivert $version release..."
-    Invoke-WebRequest -Uri $url -OutFile $archive -UseBasicParsing
+    Get-PinnedDownload $url $archive "WinDivert $version binary archive"
 
     $archiveHash = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant()
     if ($archiveHash -ne $expectedArchiveSha256) {
         throw "WinDivert archive SHA-256 mismatch. Expected $expectedArchiveSha256, got $archiveHash. No native files were installed."
     }
+    Write-Host "WinDivert binary archive checksum verified."
 
     Write-Host "Downloading the corresponding upstream source for LGPL compliance..."
-    Invoke-WebRequest -Uri $sourceUrl -OutFile $sourceArchive -UseBasicParsing
+    Get-PinnedDownload $sourceUrl $sourceArchive "WinDivert $version source archive"
     $sourceHash = (Get-FileHash -LiteralPath $sourceArchive -Algorithm SHA256).Hash.ToLowerInvariant()
     if ($sourceHash -ne $expectedSourceArchiveSha256) {
         throw "WinDivert source archive SHA-256 mismatch. Expected $expectedSourceArchiveSha256, got $sourceHash. No native files were installed."
     }
+    Write-Host "WinDivert source archive checksum verified."
 
     Expand-Archive -LiteralPath $archive -DestinationPath $extract -Force
     $root = Join-Path $extract 'WinDivert-2.2.2-A'
@@ -90,6 +110,13 @@ Verified SHA-256:
 "@
     Set-Content -LiteralPath (Join-Path $notices 'WinDivert-DEPENDENCY.txt') -Value $dependencyNotice -Encoding utf8
     Write-Host "Verified WinDivert $version archive and x64 components; DLL and driver staged in $destination."
+}
+catch {
+    $message = "WinDivert staging failed: $($_.Exception.Message)"
+    $annotation = $message.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+    Write-Host "::error title=WinDivert staging failed::$annotation"
+    Write-Host "WinDivert staging exception: $($_.Exception.ToString())"
+    throw
 }
 finally {
     if (Test-Path -LiteralPath $work) {
