@@ -72,10 +72,22 @@ jobs:
       - name: Fetch and verify official WinDivert 2.2.2 x64 components
         shell: pwsh
         run: |
+          $ErrorActionPreference = "Stop"
           $publish = Join-Path $PWD "artifacts/publish/win-x64"
-          & .\scripts\Download-WinDivert.ps1 -Destination $publish
-          if (-not (Test-Path (Join-Path $publish "WinDivert.dll")) -or -not (Test-Path (Join-Path $publish "WinDivert64.sys"))) {
-            throw "Verified WinDivert runtime files are missing."
+          try {
+            & .\scripts\Download-WinDivert.ps1 -Destination $publish
+            $required = @("WinDivert.dll", "WinDivert64.sys")
+            $missing = @($required | Where-Object { -not (Test-Path -LiteralPath (Join-Path $publish $_) -PathType Leaf) })
+            if ($missing.Count -gt 0) {
+              $present = @(Get-ChildItem -LiteralPath $publish -File | Select-Object -ExpandProperty Name) -join ", "
+              throw "Verified WinDivert runtime files are missing: $($missing -join ', '). Files present: $present"
+            }
+          }
+          catch {
+            $message = "WinDivert staging workflow step failed: $($_.Exception.Message)"
+            $annotation = $message.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Host "::error title=WinDivert staging workflow step failed::$annotation"
+            throw
           }
 
       - name: Add documentation and runtime licence notices
