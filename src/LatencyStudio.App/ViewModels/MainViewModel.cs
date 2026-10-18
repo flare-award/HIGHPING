@@ -802,6 +802,9 @@ internal sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
     private string BuildDiagnosticsReport()
     {
         var snapshot = _engineController.Snapshot;
+        var delayDescription = _settings.Mode == LatencyMode.Fixed
+            ? $"out={_settings.OutgoingDelayMs} ms, in={_settings.IncomingDelayMs} ms"
+            : $"target={_settings.TargetRttMs} ms";
         return string.Join(Environment.NewLine,
         new[]
         {
@@ -809,7 +812,7 @@ internal sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
             $"ОС: {OsVersionText}",
             $"Состояние: {snapshot.State}",
             $"Режим: {_settings.Mode}",
-            $"Задержка: {_settings.Mode == LatencyMode.Fixed ? $"out={_settings.OutgoingDelayMs} ms, in={_settings.IncomingDelayMs} ms" : $"target={_settings.TargetRttMs} ms"}",
+            $"Задержка: {delayDescription}",
             $"Обработано пакетов: {snapshot.ProcessedPackets}",
             $"Отложено пакетов: {snapshot.DelayedPackets}",
             $"Передано без задержки: {snapshot.BypassedPackets}",
