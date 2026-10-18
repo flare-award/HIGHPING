@@ -848,7 +848,7 @@ internal sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
             var dispatcher = System.Windows.Application.Current?.Dispatcher;
             if (dispatcher is not null && !dispatcher.HasShutdownStarted && !dispatcher.HasShutdownFinished)
             {
-                dispatcher.BeginInvoke(new Action(() => StatusMessage = message));
+                await dispatcher.InvokeAsync(() => StatusMessage = message);
             }
         }
     }
