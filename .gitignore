@@ -1,0 +1,19 @@
+# .NET build output
+**/bin/
+**/obj/
+**/TestResults/
+
+# IDE and local tooling
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Generated packages and logs (built in GitHub Actions)
+artifacts/
+*.log
+*.tmp
+
+# OS
+.DS_Store
+Thumbs.db

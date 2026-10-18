@@ -1,0 +1,663 @@
+<Window x:Class="LatencyStudio.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        xmlns:validation="clr-namespace:LatencyStudio.App.Validation"
+        Title="Latency Studio"
+        Width="1280" Height="850" MinWidth="1080" MinHeight="720"
+        WindowStyle="None" ResizeMode="CanResize"
+        Background="{StaticResource WindowBackgroundBrush}"
+        Foreground="{StaticResource TextPrimaryBrush}"
+        FontFamily="Segoe UI" FontSize="13"
+        UseLayoutRounding="True" SnapsToDevicePixels="True">
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="54" ResizeBorderThickness="6" CornerRadius="10" GlassFrameThickness="0" UseAeroCaptionButtons="False" />
+    </shell:WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource PanelBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource PanelBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="18" />
+            <Setter Property="Padding" Value="22" />
+        </Style>
+
+        <Style x:Key="NavigationRadioStyle" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Margin" Value="0,3" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Surface" Background="Transparent" CornerRadius="10" Padding="12,11">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4" />
+                                    <ColumnDefinition Width="12" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border x:Name="Indicator" Grid.Column="0" Width="3" CornerRadius="2" Background="Transparent" />
+                                <ContentPresenter Grid.Column="2" VerticalAlignment="Center" RecognizesAccessKey="True" />
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Surface" Property="Background" Value="#172231" />
+                                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Surface" Property="Background" Value="#19283B" />
+                                <Setter TargetName="Indicator" Property="Background" Value="{StaticResource AccentBrush}" />
+                                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="18,12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Surface" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="12" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Surface" Property="Background" Value="{StaticResource AccentHoverBrush}" />
+                                <Setter TargetName="Surface" Property="BorderBrush" Value="{StaticResource AccentHoverBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Surface" Property="Opacity" Value="0.82" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Surface" Property="Opacity" Value="0.55" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Background" Value="#182333" />
+            <Setter Property="BorderBrush" Value="#304158" />
+            <Setter Property="Padding" Value="14,10" />
+        </Style>
+
+        <Style x:Key="TitleBarButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="42" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Margin" Value="3,0" />
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Surface" Background="{TemplateBinding Background}" CornerRadius="7">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Surface" Property="Background" Value="#202C3A" />
+                                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="DarkTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Background" Value="#0C121B" />
+            <Setter Property="BorderBrush" Value="#2B394C" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="11,8" />
+            <Setter Property="CaretBrush" Value="{StaticResource AccentHoverBrush}" />
+            <Setter Property="SelectionBrush" Value="#315D94" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="Box" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="9" SnapsToDevicePixels="True">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                            </Trigger>
+                            <Trigger Property="Validation.HasError" Value="True">
+                                <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource DangerBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SectionEyebrowStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+
+        <Style x:Key="MetricCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+            <Setter Property="Padding" Value="18,16" />
+            <Setter Property="CornerRadius" Value="15" />
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="54" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="#0D131D" BorderBrush="#1F2A39" BorderThickness="0,0,0,1">
+            <Grid Margin="22,0,16,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Border Width="30" Height="30" CornerRadius="9" Background="#162A42" BorderBrush="#2D5D94" BorderThickness="1" VerticalAlignment="Center">
+                    <TextBlock Text="〰" Foreground="#64D8FF" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-3,0,0" />
+                </Border>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="LATENCY STUDIO" FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                    <Border Margin="11,0,0,0" Padding="7,3" CornerRadius="7" Background="#111A27">
+                        <TextBlock Text="NETWORK CONTROL" FontSize="9" FontWeight="Bold" Foreground="{StaticResource MutedBrush}" />
+                    </Border>
+                </StackPanel>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Style="{StaticResource TitleBarButtonStyle}" Content="—" ToolTip="Свернуть" Click="MinimizeWindow_Click" shell:WindowChrome.IsHitTestVisibleInChrome="True" />
+                    <Button Style="{StaticResource TitleBarButtonStyle}" Content="□" ToolTip="Развернуть / восстановить" Click="MaximizeWindow_Click" shell:WindowChrome.IsHitTestVisibleInChrome="True" />
+                    <Button Style="{StaticResource TitleBarButtonStyle}" Content="×" ToolTip="Закрыть или свернуть в трей" Click="CloseWindow_Click" shell:WindowChrome.IsHitTestVisibleInChrome="True" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="224" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="#0D131D" BorderBrush="#1F2A39" BorderThickness="0,0,1,0">
+                <Grid Margin="16,22,16,18">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="24" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Margin="10,0,0,0">
+                        <TextBlock Text="РАБОЧЕЕ ПРОСТРАНСТВО" Style="{StaticResource SectionEyebrowStyle}" />
+                        <TextBlock Text="Управление сетью" Foreground="{StaticResource TextPrimaryBrush}" FontSize="15" FontWeight="SemiBold" Margin="0,7,0,0" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="2">
+                        <RadioButton Style="{StaticResource NavigationRadioStyle}" GroupName="Navigation" IsChecked="{Binding IsHomePage, Mode=OneWay}" Command="{Binding NavigateCommand}" CommandParameter="Home">
+                            <StackPanel Orientation="Horizontal"><TextBlock Text="◈" Width="28" FontSize="16" Foreground="#69B7FF" /><TextBlock Text="Панель управления" /></StackPanel>
+                        </RadioButton>
+                        <RadioButton Style="{StaticResource NavigationRadioStyle}" GroupName="Navigation" IsChecked="{Binding IsSettingsPage, Mode=OneWay}" Command="{Binding NavigateCommand}" CommandParameter="Settings">
+                            <StackPanel Orientation="Horizontal"><TextBlock Text="⚙" Width="28" FontSize="16" /><TextBlock Text="Настройки" /></StackPanel>
+                        </RadioButton>
+                        <RadioButton Style="{StaticResource NavigationRadioStyle}" GroupName="Navigation" IsChecked="{Binding IsDiagnosticsPage, Mode=OneWay}" Command="{Binding NavigateCommand}" CommandParameter="Diagnostics">
+                            <StackPanel Orientation="Horizontal"><TextBlock Text="⌁" Width="28" FontSize="18" /><TextBlock Text="Диагностика" /></StackPanel>
+                        </RadioButton>
+                        <RadioButton Style="{StaticResource NavigationRadioStyle}" GroupName="Navigation" IsChecked="{Binding IsAboutPage, Mode=OneWay}" Command="{Binding NavigateCommand}" CommandParameter="About">
+                            <StackPanel Orientation="Horizontal"><TextBlock Text="ⓘ" Width="28" FontSize="16" /><TextBlock Text="О программе" /></StackPanel>
+                        </RadioButton>
+                    </StackPanel>
+                    <Border Grid.Row="4" Background="#111A27" BorderBrush="#233246" BorderThickness="1" CornerRadius="13" Padding="13">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border Width="8" Height="8" CornerRadius="4" Margin="0,0,9,0">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="#54677F" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsDelayActive}" Value="True"><Setter Property="Background" Value="{StaticResource SuccessBrush}" /></DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                </Border>
+                                <TextBlock Text="Состояние" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" />
+                            </StackPanel>
+                            <TextBlock Text="{Binding EngineStateText}" FontSize="12" FontWeight="Bold" Margin="0,8,0,0" />
+                            <TextBlock Text="{Binding ConfiguredDelayText}" Foreground="{StaticResource MutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,5,0,0" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Column="1" Margin="28,20,28,16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="58" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="30" />
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Margin="2,0,2,8">
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="{Binding PageTitle}" FontSize="23" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Text="Системное управление искусственной задержкой" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,3,0,0" />
+                    </StackPanel>
+                    <Border HorizontalAlignment="Right" VerticalAlignment="Center" Background="#111A27" BorderBrush="#243448" BorderThickness="1" CornerRadius="10" Padding="11,7">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="7" Height="7" CornerRadius="4" Margin="0,0,8,0" VerticalAlignment="Center">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="#54677F" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsDelayActive}" Value="True"><Setter Property="Background" Value="{StaticResource SuccessBrush}" /></DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                            </Border>
+                            <TextBlock Text="{Binding EngineStateText}" FontSize="10" FontWeight="Bold" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <Grid Grid.Row="1">
+                    <ScrollViewer Visibility="{Binding IsHomePage, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Margin="0,2,6,14">
+                            <Grid Height="248" Margin="0,0,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1.48*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="1*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Style="{StaticResource CardStyle}" Background="#111A28" Padding="24">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <Grid>
+                                            <StackPanel>
+                                                <TextBlock Text="СИСТЕМНЫЙ КОНТРОЛЬ" Style="{StaticResource SectionEyebrowStyle}" Foreground="#8DA5C1" />
+                                                <TextBlock Text="Искусственная задержка" FontSize="18" FontWeight="SemiBold" Margin="0,7,0,0" />
+                                            </StackPanel>
+                                            <Border HorizontalAlignment="Right" VerticalAlignment="Top" CornerRadius="8" Padding="9,5" Background="#1A2D43">
+                                                <TextBlock Text="{Binding ModeText}" Foreground="#92C8FF" FontSize="10" FontWeight="SemiBold" />
+                                            </Border>
+                                        </Grid>
+                                        <Grid Grid.Row="1" Margin="0,15,0,12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Border Width="94" Height="94" CornerRadius="47" BorderBrush="#274464" BorderThickness="1" Background="#0D1724" VerticalAlignment="Center">
+                                                <Grid>
+                                                    <Ellipse Width="68" Height="68" Stroke="#1D3856" StrokeThickness="1" />
+                                                    <Ellipse Width="48" Height="48" Stroke="#224D7A" StrokeThickness="1" />
+                                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"><TextBlock Text="{Binding GaugeValueText}" FontSize="23" FontWeight="Light" Foreground="#77D8FF" HorizontalAlignment="Center" /><TextBlock Text="{Binding GaugeCaption}" FontSize="8" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,1,0,0" /></StackPanel>
+                                                </Grid>
+                                            </Border>
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="18,0,0,0">
+                                                <TextBlock Text="ЗАДАЧА" Style="{StaticResource SectionEyebrowStyle}" />
+                                                <TextBlock Text="Контролировать задержку" FontSize="15" FontWeight="SemiBold" Margin="0,5,0,0" />
+                                                <TextBlock Text="{Binding MainStatusText}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,6,4,0" />
+                                            </StackPanel>
+                                        </Grid>
+                                        <Grid Grid.Row="2">
+                                            <Button Style="{StaticResource PrimaryButtonStyle}" Width="226" HorizontalAlignment="Left" Command="{Binding ToggleDelayCommand}" Content="{Binding ToggleButtonText}" />
+                                            <TextBlock Text="{Binding StatusMessage}" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap" MaxWidth="250" Margin="16,0,0,0" />
+                                        </Grid>
+                                    </Grid>
+                                </Border>
+
+                                <Border Grid.Column="2" Style="{StaticResource CardStyle}" Padding="21">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <StackPanel>
+                                            <TextBlock Text="ТЕСТОВОЕ СОЕДИНЕНИЕ" Style="{StaticResource SectionEyebrowStyle}" />
+                                            <TextBlock Text="Измерение TCP RTT" FontSize="17" FontWeight="SemiBold" Margin="0,7,0,0" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="1" VerticalAlignment="Center" Margin="0,5,0,5">
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Baseline">
+                                                <TextBlock Text="{Binding MeasuredTcpConnectText}" FontSize="35" FontWeight="Light" Foreground="#75D9FF" />
+                                                <TextBlock Text="  TCP connect" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding ProbeTimestampText}" FontSize="10" Foreground="{StaticResource MutedBrush}" Margin="0,2,0,9" />
+                                            <TextBlock Text="Исходный handshake: " Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" />
+                                            <TextBlock Text="{Binding SourceBaselineText}" FontSize="15" FontWeight="SemiBold" Margin="0,3,0,0" />
+                                        </StackPanel>
+                                        <Button Grid.Row="2" Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Left" Command="{Binding MeasureProbeCommand}" Content="{Binding ProbeButtonText}" IsEnabled="{Binding CanMeasureProbe}" />
+                                    </Grid>
+                                </Border>
+                            </Grid>
+
+                            <Grid Height="114" Margin="0,0,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="12" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="12" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Style="{StaticResource MetricCardStyle}">
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="ИСХОДНАЯ ЗАДЕРЖКА" Style="{StaticResource SectionEyebrowStyle}" />
+                                        <TextBlock Text="{Binding SourceBaselineText}" FontSize="24" FontWeight="Light" Margin="0,9,0,1" />
+                                        <TextBlock Text="тестовый TCP handshake" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Column="2" Style="{StaticResource MetricCardStyle}">
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="ДОБАВЛЯЕТСЯ К RTT" Style="{StaticResource SectionEyebrowStyle}" />
+                                        <TextBlock Text="{Binding AddedRttText}" FontSize="24" FontWeight="Light" Foreground="#75D9FF" Margin="0,9,0,1" />
+                                        <TextBlock Text="сумма направлений, оценка" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Column="4" Style="{StaticResource MetricCardStyle}">
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="ФАКТИЧЕСКИ ИЗМЕРЕНО" Style="{StaticResource SectionEyebrowStyle}" />
+                                        <TextBlock Text="{Binding MeasuredTcpConnectText}" FontSize="24" FontWeight="Light" Margin="0,9,0,1" />
+                                        <TextBlock Text="TCP connect к выбранному узлу" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+
+                            <Grid MinHeight="266">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="0.9*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="1.25*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Style="{StaticResource CardStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="РЕЖИМ РАБОТЫ" Style="{StaticResource SectionEyebrowStyle}" />
+                                        <TextBlock Text="Как задаём задержку" FontSize="17" FontWeight="SemiBold" Margin="0,7,0,14" />
+                                        <RadioButton Style="{StaticResource NavigationRadioStyle}" GroupName="LatencyMode" IsChecked="{Binding IsTargetMode, Mode=TwoWay}">
+                                            <StackPanel>
+                                                <TextBlock Text="Целевой RTT" Foreground="{StaticResource TextPrimaryBrush}" />
+                                                <TextBlock Text="Попытка приблизиться к значению" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0" />
+                                            </StackPanel>
+                                        </RadioButton>
+                                        <RadioButton Style="{StaticResource NavigationRadioStyle}" GroupName="LatencyMode" IsChecked="{Binding IsFixedMode, Mode=TwoWay}">
+                                            <StackPanel>
+                                                <TextBlock Text="Фиксированная задержка" Foreground="{StaticResource TextPrimaryBrush}" />
+                                                <TextBlock Text="Заданное число миллисекунд в каждом направлении" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                            </StackPanel>
+                                        </RadioButton>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Column="2" Style="{StaticResource CardStyle}">
+                                    <Grid>
+                                        <StackPanel Visibility="{Binding IsTargetMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                            <Grid>
+                                                <StackPanel>
+                                                    <TextBlock Text="ЦЕЛЕВОЙ RTT" Style="{StaticResource SectionEyebrowStyle}" />
+                                                    <TextBlock Text="Сначала измеряем исходное TCP-соединение" FontSize="14" FontWeight="SemiBold" Margin="0,7,0,0" />
+                                                </StackPanel>
+                                                <TextBox Width="84" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" TextAlignment="Center" Style="{StaticResource DarkTextBoxStyle}">
+                                                    <TextBox.Text>
+                                                        <Binding Path="TargetRttMs" Mode="TwoWay" UpdateSourceTrigger="LostFocus" ValidatesOnExceptions="True" NotifyOnValidationError="True">
+                                                            <Binding.ValidationRules><validation:IntegerRangeRule Minimum="0" Maximum="2000" /></Binding.ValidationRules>
+                                                        </Binding>
+                                                    </TextBox.Text>
+                                                </TextBox>
+                                            </Grid>
+                                            <Slider Minimum="0" Maximum="2000" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding TargetRttMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,18,0,7" Foreground="{StaticResource AccentBrush}" />
+                                            <Grid>
+                                                <TextBlock Text="0 мс" FontSize="10" Foreground="{StaticResource MutedBrush}" />
+                                                <TextBlock Text="500 мс" FontSize="10" Foreground="{StaticResource MutedBrush}" HorizontalAlignment="Center" />
+                                                <TextBlock Text="2 000 мс" FontSize="10" Foreground="{StaticResource MutedBrush}" HorizontalAlignment="Right" />
+                                            </Grid>
+                                            <TextBlock Text="{Binding TargetModeExplanation}" TextWrapping="Wrap" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,15,0,0" />
+                                        </StackPanel>
+
+                                        <StackPanel Visibility="{Binding IsFixedMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                            <TextBlock Text="ФИКСИРОВАННАЯ ЗАДЕРЖКА" Style="{StaticResource SectionEyebrowStyle}" />
+                                            <TextBlock Text="Настройте каждое направление независимо" FontSize="14" FontWeight="SemiBold" Margin="0,7,0,13" />
+                                            <Grid Margin="0,0,0,12">
+                                                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="78" /></Grid.ColumnDefinitions>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="Исходящий трафик" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                    <Slider Minimum="0" Maximum="1000" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding OutgoingDelayMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,7,12,0" Foreground="{StaticResource AccentBrush}" />
+                                                </StackPanel>
+                                                <TextBox Grid.Column="1" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Style="{StaticResource DarkTextBoxStyle}">
+                                                    <TextBox.Text>
+                                                        <Binding Path="OutgoingDelayMs" Mode="TwoWay" UpdateSourceTrigger="LostFocus" ValidatesOnExceptions="True" NotifyOnValidationError="True">
+                                                            <Binding.ValidationRules><validation:IntegerRangeRule Minimum="0" Maximum="1000" /></Binding.ValidationRules>
+                                                        </Binding>
+                                                    </TextBox.Text>
+                                                </TextBox>
+                                            </Grid>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="78" /></Grid.ColumnDefinitions>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="Входящий трафик" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                    <Slider Minimum="0" Maximum="1000" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding IncomingDelayMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,7,12,0" Foreground="{StaticResource AccentBrush}" />
+                                                </StackPanel>
+                                                <TextBox Grid.Column="1" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Style="{StaticResource DarkTextBoxStyle}">
+                                                    <TextBox.Text>
+                                                        <Binding Path="IncomingDelayMs" Mode="TwoWay" UpdateSourceTrigger="LostFocus" ValidatesOnExceptions="True" NotifyOnValidationError="True">
+                                                            <Binding.ValidationRules><validation:IntegerRangeRule Minimum="0" Maximum="1000" /></Binding.ValidationRules>
+                                                        </Binding>
+                                                    </TextBox.Text>
+                                                </TextBox>
+                                            </Grid>
+                                            <TextBlock FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,11,0,0"><Run Text="Оценка добавки к RTT: " /><Run Text="{Binding DirectionalDelayText}" /></TextBlock>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <ScrollViewer Visibility="{Binding IsSettingsPage, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Margin="0,2,6,14">
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="ПОВЕДЕНИЕ ПРИЛОЖЕНИЯ" Style="{StaticResource SectionEyebrowStyle}" />
+                                    <TextBlock Text="Запуск и фон" FontSize="17" FontWeight="SemiBold" Margin="0,7,0,16" />
+                                    <CheckBox IsChecked="{Binding StartWithWindows, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}" FontSize="13" Margin="0,0,0,12">
+                                        <StackPanel>
+                                            <TextBlock Text="Запускать Latency Studio вместе с Windows" FontWeight="SemiBold" />
+                                            <TextBlock Text="При автозапуске задержка остаётся выключенной. Для перехвата потребуется отдельное подтверждение UAC." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                        </StackPanel>
+                                    </CheckBox>
+                                    <CheckBox IsChecked="{Binding MinimizeToTray, Mode=TwoWay}" Foreground="{StaticResource TextPrimaryBrush}" FontSize="13">
+                                        <StackPanel>
+                                            <TextBlock Text="При закрытии окна оставаться в системном трее" FontWeight="SemiBold" />
+                                            <TextBlock Text="Выход через меню трея штатно выключает обработчик и освобождает очередь." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                        </StackPanel>
+                                    </CheckBox>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="ТЕСТОВОЙ УЗЕЛ" Style="{StaticResource SectionEyebrowStyle}" />
+                                    <TextBlock Text="Адрес для измерения TCP connect RTT" FontSize="17" FontWeight="SemiBold" Margin="0,7,0,5" />
+                                    <TextBlock Text="Введите DNS-имя, IP-адрес или адрес с портом. Без порта используется 443; IPv6 с портом вводится как [2001:db8::1]:443." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,14" />
+                                    <Grid>
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="14" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                        <TextBox Style="{StaticResource DarkTextBoxStyle}" Text="{Binding TestNodeInput, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" />
+                                        <Button Grid.Column="2" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding MeasureProbeCommand}" Content="{Binding ProbeButtonText}" IsEnabled="{Binding CanMeasureProbe}" />
+                                    </Grid>
+                                    <TextBlock Text="{Binding TestNodeValidationMessage}" Foreground="{StaticResource DangerBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0" />
+                                    <TextBlock Text="{Binding ProbeErrorMessage}" Foreground="{StaticResource WarningBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,6,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="ИСКЛЮЧЕНИЯ" Style="{StaticResource SectionEyebrowStyle}" />
+                                    <TextBlock Text="Не задерживать выбранные порты" FontSize="17" FontWeight="SemiBold" Margin="0,7,0,5" />
+                                    <TextBlock Text="Укажите порты TCP/UDP через запятую, например 53, 123. Фильтр применяется сразу, без перезапуска обработчика. Loopback и уже внедрённые пакеты исключаются всегда. Исключения по имени процесса недоступны на выбранном сетевом уровне: WinDivert NETWORK не сообщает PID владельца пакета." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,14" />
+                                    <TextBox Style="{StaticResource DarkTextBoxStyle}" Text="{Binding ExcludedPortsInput, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" />
+                                    <TextBlock Text="{Binding ExcludedPortsValidationMessage}" Foreground="{StaticResource DangerBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardStyle}">
+                                <Grid>
+                                    <StackPanel>
+                                        <TextBlock Text="СБРОС" Style="{StaticResource SectionEyebrowStyle}" />
+                                        <TextBlock Text="Вернуть значения по умолчанию" FontSize="16" FontWeight="SemiBold" Margin="0,7,0,4" />
+                                        <TextBlock Text="Сбрасывает режим, RTT, тестовый узел, исключения и настройки фона. Активную задержку не выключает автоматически." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" MaxWidth="600" />
+                                    </StackPanel>
+                                    <Button HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding RestoreDefaultsCommand}" Content="Восстановить" />
+                                </Grid>
+                            </Border>
+                            <TextBlock Text="{Binding SettingsValidationMessage}" Foreground="{StaticResource DangerBrush}" TextWrapping="Wrap" Margin="2,12,0,0" />
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <ScrollViewer Visibility="{Binding IsDiagnosticsPage, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Margin="0,2,6,14">
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                                <Grid>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="СОСТОЯНИЕ ОБРАБОТЧИКА" Style="{StaticResource SectionEyebrowStyle}" />
+                                        <TextBlock Text="{Binding EngineStateText}" FontSize="20" FontWeight="SemiBold" Margin="0,7,0,4" />
+                                        <TextBlock Text="{Binding MainStatusText}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                    <Button Grid.Column="1" VerticalAlignment="Top" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding CopyDiagnosticsCommand}" Content="Скопировать отчёт" />
+                                </Grid>
+                            </Border>
+
+                            <UniformGrid Columns="3" Margin="0,0,0,16">
+                                <Border Style="{StaticResource MetricCardStyle}" Margin="0,0,8,0">
+                                    <StackPanel><TextBlock Text="ПАКЕТЫ ОБРАБОТАНЫ" Style="{StaticResource SectionEyebrowStyle}" /><TextBlock Text="{Binding ProcessedPacketsText}" FontSize="24" Margin="0,8,0,0" /></StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource MetricCardStyle}" Margin="4,0">
+                                    <StackPanel><TextBlock Text="ПАКЕТЫ ОТЛОЖЕНЫ" Style="{StaticResource SectionEyebrowStyle}" /><TextBlock Text="{Binding DelayedPacketsText}" FontSize="24" Foreground="#75D9FF" Margin="0,8,0,0" /></StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource MetricCardStyle}" Margin="8,0,0,0">
+                                    <StackPanel><TextBlock Text="ОЧЕРЕДЬ" Style="{StaticResource SectionEyebrowStyle}" /><TextBlock Text="{Binding QueueText}" FontSize="15" Margin="0,11,0,0" /></StackPanel>
+                                </Border>
+                            </UniformGrid>
+
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                                <Grid>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                    <StackPanel Margin="0,0,18,0">
+                                        <TextBlock Text="ПЛАТФОРМА И ПРАВА" Style="{StaticResource SectionEyebrowStyle}" />
+                                        <TextBlock Text="{Binding OsVersionText}" Margin="0,10,0,0" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding AdministratorStatusText}" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,7,0,0" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding DriverStatusText}" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,7,0,0" TextWrapping="Wrap" />
+                                        <TextBlock Text="Версия WinDivert: 2.2.2 (официальная x64-поставка)" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,7,0,0" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="18,0,0,0">
+                                        <TextBlock Text="СЕТЕВАЯ СТАТИСТИКА" Style="{StaticResource SectionEyebrowStyle}" />
+                                        <TextBlock Text="{Binding ModeText}" Margin="0,10,0,0" />
+                                        <TextBlock Foreground="{StaticResource TextSecondaryBrush}" Margin="0,7,0,0"><Run Text="Успешно измеренных TCP-потоков: " /><Run Text="{Binding CalibratedFlowsText}" /></TextBlock>
+                                        <TextBlock Foreground="{StaticResource TextSecondaryBrush}" Margin="0,7,0,0"><Run Text="Передано без задержки: " /><Run Text="{Binding BypassedPacketsText}" /></TextBlock>
+                                        <TextBlock Foreground="{StaticResource TextSecondaryBrush}" Margin="0,7,0,0"><Run Text="Ошибки: " /><Run Text="{Binding ErrorCountText}" /></TextBlock>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="ПОСЛЕДНЯЯ ОШИБКА" Style="{StaticResource SectionEyebrowStyle}" />
+                                    <TextBlock Text="{Binding LastEngineErrorText}" Foreground="{StaticResource WarningBrush}" TextWrapping="Wrap" Margin="0,9,0,0" />
+                                    <TextBlock Text="{Binding ProbeErrorMessage}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,7,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardStyle}">
+                                <Grid>
+                                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="190" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                                    <Grid>
+                                        <StackPanel><TextBlock Text="ЖУРНАЛ" Style="{StaticResource SectionEyebrowStyle}" /><TextBlock Text="Диагностические события" FontSize="16" FontWeight="SemiBold" Margin="0,7,0,12" /></StackPanel>
+                                        <Button HorizontalAlignment="Right" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding OpenLogsFolderCommand}" Content="Открыть файл журнала" />
+                                    </Grid>
+                                    <TextBox Grid.Row="1" Style="{StaticResource DarkTextBoxStyle}" Text="{Binding RecentLogsText}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" FontSize="10" Padding="12" />
+                                    <TextBlock Grid.Row="2" Foreground="{StaticResource MutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,9,0,0"><Run Text="Полный журнал: " /><Run Text="{Binding LogFilePath}" /></TextBlock>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <ScrollViewer Visibility="{Binding IsAboutPage, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Margin="0,2,6,14">
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16" Background="#121C2A">
+                                <StackPanel>
+                                    <Border Width="64" Height="64" CornerRadius="18" Background="#172D47" BorderBrush="#315E8D" BorderThickness="1" HorizontalAlignment="Left" Margin="0,0,0,18">
+                                        <TextBlock Text="〰" Foreground="#75D9FF" FontSize="36" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-6,0,0" />
+                                    </Border>
+                                    <TextBlock Text="Latency Studio" FontSize="28" FontWeight="Bold" />
+                                    <TextBlock Foreground="{StaticResource TextSecondaryBrush}" Margin="0,7,0,0"><Run Text="Версия " /><Run Text="{Binding AppVersionText}" /><Run Text=" · Windows x64" /></TextBlock>
+                                    <TextBlock Text="Системный инструмент для контролируемого добавления задержки к сетевым пакетам. Обрабатывает внешний IPv4/IPv6-трафик всех приложений через WinDivert; полезные данные пакетов не изменяются." TextWrapping="Wrap" FontSize="13" LineHeight="22" Margin="0,20,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="ВАЖНО" Style="{StaticResource SectionEyebrowStyle}" />
+                                    <TextBlock Text="Искусственная задержка ухудшает качество голосовой связи, игры, видеозвонков и загрузок. Она может вызвать тайм-ауты и изменение поведения приложений. Совместимость с античитами CS2, VALORANT и других игр отдельно не проверена и не гарантируется." Foreground="{StaticResource WarningBrush}" TextWrapping="Wrap" FontSize="13" LineHeight="21" Margin="0,10,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                                <Grid>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="ТЕХНОЛОГИИ И ЛИЦЕНЗИИ" Style="{StaticResource SectionEyebrowStyle}" />
+                                        <TextBlock Text="Интерфейс: WPF / .NET 10. Системный перехват: WinDivert 2.2.2 (не изменённая официальная библиотека и подписанный x64-драйвер). WinDivert распространяется под LGPL-3.0-or-later либо GPL-2.0; приложение включает notices и ссылку на исходный код." TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,9,18,0" />
+                                    </StackPanel>
+                                    <Button Grid.Column="1" VerticalAlignment="Center" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding OpenWinDivertDocsCommand}" Content="WinDivert на GitHub" />
+                                </Grid>
+                            </Border>
+
+                            <Border Style="{StaticResource CardStyle}">
+                                <Grid>
+                                    <StackPanel>
+                                        <TextBlock Text="ИДЕНТИФИКАТОР СБОРКИ" Style="{StaticResource SectionEyebrowStyle}" />
+                                        <TextBlock FontSize="15" FontWeight="SemiBold" Margin="0,8,0,0"><Run Text="Latency Studio " /><Run Text="{Binding AppVersionText}" /></TextBlock>
+                                        <TextBlock Text="UAC запрашивается только при включении системного перехвата, если приложение не запущено от администратора." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,7,0,0" />
+                                    </StackPanel>
+                                    <Button HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding CopyVersionCommand}" Content="Скопировать версию" />
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+
+                <Border Grid.Row="2" BorderBrush="#202B39" BorderThickness="0,1,0,0" Padding="2,7,2,0">
+                    <Grid>
+                        <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                        <TextBlock Text="SYSTEM-WIDE · IPv4 / IPv6 · ALL APPS" Foreground="{StaticResource MutedBrush}" FontSize="9" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
