@@ -100,7 +100,7 @@ public sealed class CoreBehaviorTests
 
         Assert.False(unknown.IsCalibrated);
         Assert.Null(unknown.AddedRttMs);
-        Assert.Equal(0d, alreadySlow.Delay.AddedRttMs!.Value);
+        Assert.Equal(0d, alreadySlow.Delay.AddedRttMs);
     }
 
     [Fact]
