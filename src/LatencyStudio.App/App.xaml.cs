@@ -7,7 +7,7 @@ using LatencyStudio.Core.Runtime;
 
 namespace LatencyStudio.App;
 
-public partial class App : Application
+public partial class App : System.Windows.Application
 {
     private SingleInstanceGuard? _instanceGuard;
     private SettingsStore? _settingsStore;
@@ -31,7 +31,7 @@ public partial class App : Application
             _instanceGuard = new SingleInstanceGuard();
             if (!_instanceGuard.TryAcquire(waitForPreviousInstance: elevatedEnable))
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     "Latency Studio уже запущена. Откройте существующее окно из системного трея.",
                     "Latency Studio",
                     MessageBoxButton.OK,
@@ -58,7 +58,7 @@ public partial class App : Application
         catch (Exception exception)
         {
             AppLogger.Error("Ошибка запуска приложения.", exception);
-            MessageBox.Show(
+            System.Windows.MessageBox.Show(
                 $"Не удалось запустить Latency Studio.\n\n{exception.Message}",
                 "Ошибка запуска",
                 MessageBoxButton.OK,
@@ -91,7 +91,7 @@ public partial class App : Application
         catch (Exception exception)
         {
             AppLogger.Error("Ошибка при штатном завершении приложения.", exception);
-            MessageBox.Show(
+            System.Windows.MessageBox.Show(
                 "При остановке сетевого обработчика возникла ошибка. Windows закроет дескриптор WinDivert при завершении процесса.\n\n" + exception.Message,
                 "Latency Studio — предупреждение",
                 MessageBoxButton.OK,
@@ -140,7 +140,7 @@ public partial class App : Application
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
         AppLogger.Error("Необработанная ошибка интерфейса.", e.Exception);
-        MessageBox.Show(
+        System.Windows.MessageBox.Show(
             "Произошла ошибка интерфейса. Подробности записаны в журнал диагностики.\n\n" + e.Exception.Message,
             "Latency Studio",
             MessageBoxButton.OK,

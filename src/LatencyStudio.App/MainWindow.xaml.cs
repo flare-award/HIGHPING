@@ -78,7 +78,7 @@ public partial class MainWindow : Window
         _trayMenu = new Forms.ContextMenuStrip();
         var openItem = new Forms.ToolStripMenuItem("Открыть Latency Studio", null, (_, _) => ShowWindow());
         _trayToggleItem = new Forms.ToolStripMenuItem("Включить задержку", null, (_, _) => _viewModel.ToggleDelayCommand.Execute(null));
-        var exitItem = new Forms.ToolStripMenuItem("Завершить программу", null, (_, _) => _ = ((App)Application.Current).RequestExitAsync());
+        var exitItem = new Forms.ToolStripMenuItem("Завершить программу", null, (_, _) => _ = ((App)System.Windows.Application.Current).RequestExitAsync());
         _trayMenu.Items.Add(openItem);
         _trayMenu.Items.Add(_trayToggleItem);
         _trayMenu.Items.Add(new Forms.ToolStripSeparator());
@@ -148,7 +148,7 @@ public partial class MainWindow : Window
 
     private async void OnElevationRequested(object? sender, EventArgs e)
     {
-        var answer = MessageBox.Show(
+        var answer = System.Windows.MessageBox.Show(
             this,
             "Чтобы задерживать сетевые пакеты всех приложений, Windows должна загрузить подписанный драйвер WinDivert. Это требует прав администратора.\n\nСейчас откроется штатный запрос UAC. Latency Studio не отключает защиту Windows и не меняет настройки сетевых адаптеров. Продолжить?",
             "Требуются права администратора",
@@ -163,16 +163,16 @@ public partial class MainWindow : Window
         {
             await _viewModel.SaveNowAsync();
             _ = WindowsStartupManager.StartElevatedEnable();
-            await ((App)Application.Current).RequestExitAsync();
+            await ((App)System.Windows.Application.Current).RequestExitAsync();
         }
         catch (Win32Exception exception) when (exception.NativeErrorCode == 1223)
         {
-            MessageBox.Show(this, "Запрос UAC отменён. Задержка не включена.", "Latency Studio", MessageBoxButton.OK, MessageBoxImage.Information);
+            System.Windows.MessageBox.Show(this, "Запрос UAC отменён. Задержка не включена.", "Latency Studio", MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch (Exception exception)
         {
             AppLogger.Error("Не удалось перезапустить приложение с повышением прав.", exception);
-            MessageBox.Show(this, "Не удалось открыть повышенный процесс.\n\n" + exception.Message, "Latency Studio", MessageBoxButton.OK, MessageBoxImage.Error);
+            System.Windows.MessageBox.Show(this, "Не удалось открыть повышенный процесс.\n\n" + exception.Message, "Latency Studio", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -193,7 +193,7 @@ public partial class MainWindow : Window
 
     private void OnClosing(object? sender, CancelEventArgs e)
     {
-        if (Application.Current is App app && !app.IsExiting)
+        if (System.Windows.Application.Current is App app && !app.IsExiting)
         {
             if (_viewModel.Settings.MinimizeToTray)
             {

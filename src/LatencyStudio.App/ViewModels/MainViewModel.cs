@@ -18,7 +18,7 @@ internal sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
     private readonly SettingsStore _settingsStore;
     private readonly TrafficEngineController _engineController;
     private readonly ProbeService _probeService = new();
-    private readonly Timer _saveTimer;
+    private readonly System.Threading.Timer _saveTimer;
     private readonly SemaphoreSlim _saveLock = new(1, 1);
 
     private AppSettings _settings;
@@ -71,7 +71,7 @@ internal sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
         CopyVersionCommand = new RelayCommand(_ => CopyVersion());
         OpenWinDivertDocsCommand = new RelayCommand(_ => OpenWinDivertDocs());
 
-        _saveTimer = new Timer(SaveTimerElapsed, null, Timeout.Infinite, Timeout.Infinite);
+        _saveTimer = new System.Threading.Timer(SaveTimerElapsed, null, Timeout.Infinite, Timeout.Infinite);
         _engineController.UpdateSettings(_settings);
         RefreshSnapshot();
     }
@@ -744,7 +744,7 @@ internal sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
     {
         try
         {
-            Clipboard.SetText(BuildDiagnosticsReport());
+            System.Windows.Clipboard.SetText(BuildDiagnosticsReport());
             StatusMessage = "Диагностический отчёт скопирован в буфер обмена.";
         }
         catch (Exception exception)
@@ -775,7 +775,7 @@ internal sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
     {
         try
         {
-            Clipboard.SetText($"Latency Studio {AppVersionText}");
+            System.Windows.Clipboard.SetText($"Latency Studio {AppVersionText}");
             StatusMessage = "Версия скопирована.";
         }
         catch (Exception exception)
@@ -845,7 +845,7 @@ internal sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
         {
             AppLogger.Error("Не удалось сохранить пользовательские настройки.", exception);
             var message = "Не удалось сохранить настройки: " + exception.Message;
-            var dispatcher = Application.Current?.Dispatcher;
+            var dispatcher = System.Windows.Application.Current?.Dispatcher;
             if (dispatcher is not null && !dispatcher.HasShutdownStarted && !dispatcher.HasShutdownFinished)
             {
                 dispatcher.BeginInvoke(new Action(() => StatusMessage = message));
