@@ -86,7 +86,7 @@ try {
     Copy-Item -LiteralPath $sourceFiles['LICENSE'] -Destination (Join-Path $notices 'WinDivert-LICENSE.txt') -Force
     Copy-Item -LiteralPath $sourceArchive -Destination (Join-Path $notices 'WinDivert-2.2.2-Source.zip') -Force
     $sourceNotice = @"
-Corresponding WinDivert source archive, pinned to commit $sourceCommit:
+Corresponding WinDivert source archive, pinned to commit ${sourceCommit}:
 $sourceUrl
 SHA-256: $expectedSourceArchiveSha256
 "@
