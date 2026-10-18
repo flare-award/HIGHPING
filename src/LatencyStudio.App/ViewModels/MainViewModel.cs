@@ -448,7 +448,7 @@ internal sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
 
     public string GaugeValueText => _settings.Mode == LatencyMode.TargetRtt
         ? _settings.TargetRttMs.ToString(DisplayCulture)
-        : Math.Round(_settings.OutgoingDelayMs + _settings.IncomingDelayMs).ToString("0", DisplayCulture);
+        : (_settings.OutgoingDelayMs + _settings.IncomingDelayMs).ToString(DisplayCulture);
 
     public string GaugeCaption => _settings.Mode == LatencyMode.TargetRtt ? "ЦЕЛЬ RTT" : "ДОБАВКА RTT";
 
