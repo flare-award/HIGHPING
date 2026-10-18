@@ -6,14 +6,14 @@
 
 ## Состояние сборки и скачивание
 
-Репозиторий содержит workflow **Windows build and release** в `.github/workflows/windows-release.yml`. После успешного запуска workflow на GitHub Actions он публикует артефакт **LatencyStudio-Windows-x64** с двумя файлами:
+Успешный Windows workflow **Windows build and release**: [запуск #39156370497](https://github.com/flare-award/HIGHPING/actions/runs/39156370497) на commit `b93007a`. В нём прошли тесты и сборка решения, self-contained публикация win-x64, проверка SHA-256 официальных WinDivert 2.2.2 DLL/SYS и исходного архива, а также создание portable ZIP и Inno Setup установщика. Артефакт **LatencyStudio-Windows-x64** содержит:
 
 - `LatencyStudio-Setup-1.0.0-x64.exe` — установщик;
 - `LatencyStudio-Portable-1.0.0-x64.zip` — переносимый self-contained архив.
 
-Для получения артефакта откройте вкладку **Actions → Windows build and release → последний успешный запуск → Artifacts**. При создании тега `v*` workflow также публикует эти файлы в GitHub Releases. До успешного Windows-запуска workflow готовый установщик не считается собранным; бинарные файлы не хранятся в Git.
+Скачайте его на странице запуска выше, в разделе **Artifacts**; GitHub хранит Actions-артефакты 30 дней. Tagged GitHub Release появится после публикации стабильного тега `vMAJOR.MINOR.PATCH`. Бинарные файлы не хранятся в Git.
 
-В локальной среде разработки проекта доступен Linux без Windows, .NET SDK и драйвера WinDivert, поэтому локальная сборка Windows/установка драйвера здесь не заявляются как пройденные испытания. Проверяемые и непроверенные сценарии перечислены в [отчёте о проверке](docs/VERIFICATION.md).
+Успешная сборка и упаковка выполнялись на Windows Server 2022 runner и **не подтверждают работу приложения и драйвера на Windows 10/11**. Реальная загрузка WinDivert, изменение трафика, UAC/tray/autostart и установка/удаление требуют отдельной ручной проверки на Windows. Локальная среда разработки здесь — Linux без Windows и .NET SDK; подробности и ограничения перечислены в [отчёте о проверке](docs/VERIFICATION.md).
 
 ## Возможности
 
