@@ -141,6 +141,12 @@ jobs:
             }
             Write-Host "Latency Studio startup smoke test passed; no packet delay was enabled."
           }
+          catch {
+            $detail = $_.Exception.ToString()
+            $annotation = $detail.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Host "::error title=Windows app startup smoke test failed::$annotation"
+            throw
+          }
           finally {
             $process.Refresh()
             if (-not $process.HasExited) {
