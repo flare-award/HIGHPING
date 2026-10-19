@@ -1,0 +1,231 @@
+name: Windows build and release
+
+on:
+  push:
+    branches:
+      - main
+      - "arena/**"
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-x64:
+    runs-on: windows-2022
+    timeout-minutes: 45
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Resolve application version
+        shell: pwsh
+        run: |
+          $version = "1.0.0"
+          if ($env:GITHUB_REF -like "refs/tags/*") {
+            if ($env:GITHUB_REF_NAME -notmatch '^v(?<version>\d+\.\d+\.\d+)$') {
+              throw "Release tags must use the stable vMAJOR.MINOR.PATCH format."
+            }
+            $version = $Matches.version
+          }
+          "APP_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          Write-Host "Build version: $version"
+
+      - name: Show toolchain
+        shell: pwsh
+        run: dotnet --info
+
+      - name: Restore solution
+        run: dotnet restore HighPing.sln
+
+      - name: Run automated tests and build the solution
+        run: dotnet test HighPing.sln --configuration Release --no-restore --logger "trx;LogFileName=LatencyStudio.Tests.trx"
+
+      - name: Publish self-contained Windows x64 application
+        shell: pwsh
+        run: |
+          $publish = Join-Path $PWD "artifacts/publish/win-x64"
+          New-Item -ItemType Directory -Force -Path $publish | Out-Null
+          dotnet publish src/LatencyStudio.App/LatencyStudio.App.csproj `
+            --configuration Release `
+            --runtime win-x64 `
+            --self-contained true `
+            --output $publish `
+            "-p:Version=$($env:APP_VERSION)" `
+            "-p:AssemblyVersion=$($env:APP_VERSION).0" `
+            "-p:FileVersion=$($env:APP_VERSION).0" `
+            -p:PublishReadyToRun=true `
+            -p:DebugType=None `
+            -p:DebugSymbols=false
+          if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed with exit code $LASTEXITCODE" }
+
+      - name: Fetch and verify official WinDivert 2.2.2 x64 components
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $publish = Join-Path $PWD "artifacts/publish/win-x64"
+          try {
+            & .\scripts\Download-WinDivert.ps1 -Destination $publish
+            $required = @("WinDivert.dll", "WinDivert64.sys")
+            $missing = @($required | Where-Object { -not (Test-Path -LiteralPath (Join-Path $publish $_) -PathType Leaf) })
+            if ($missing.Count -gt 0) {
+              $present = @(Get-ChildItem -LiteralPath $publish -File | Select-Object -ExpandProperty Name) -join ", "
+              throw "Verified WinDivert runtime files are missing: $($missing -join ', '). Files present: $present"
+            }
+          }
+          catch {
+            $message = "WinDivert staging workflow step failed: $($_.Exception.Message)"
+            $annotation = $message.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Host "::error title=WinDivert staging workflow step failed::$annotation"
+            throw
+          }
+
+      - name: Add documentation and runtime licence notices
+        shell: pwsh
+        run: |
+          $publish = Join-Path $PWD "artifacts/publish/win-x64"
+          Copy-Item -LiteralPath "README.md" -Destination $publish -Force
+          Copy-Item -LiteralPath "LICENSE" -Destination $publish -Force
+          Copy-Item -LiteralPath "THIRD-PARTY-NOTICES.md" -Destination $publish -Force
+
+          $noticeDir = Join-Path $publish "ThirdPartyNotices"
+          New-Item -ItemType Directory -Force -Path $noticeDir | Out-Null
+          $dotnetCommand = Get-Command dotnet -ErrorAction Stop
+          $dotnetRoot = Split-Path -Parent $dotnetCommand.Source
+          foreach ($notice in @(@{ Source = "LICENSE.txt"; Target = "DotNet-LICENSE.txt" }, @{ Source = "ThirdPartyNotices.txt"; Target = "DotNet-ThirdPartyNotices.txt" })) {
+            $sourcePath = Join-Path $dotnetRoot $notice.Source
+            if (-not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) {
+              throw "Required .NET redistribution notice was not found: $sourcePath"
+            }
+            Copy-Item -LiteralPath $sourcePath -Destination (Join-Path $noticeDir $notice.Target) -Force
+          }
+
+      - name: Smoke test Windows app startup
+        shell: pwsh
+        run: |
+          $publish = Join-Path $PWD "artifacts/publish/win-x64"
+          $exe = Join-Path $publish "LatencyStudio.exe"
+          $log = Join-Path $env:LOCALAPPDATA "LatencyStudio/logs/app.log"
+          if (-not (Test-Path -LiteralPath $exe -PathType Leaf)) { throw "Published application was not found: $exe" }
+          Remove-Item -LiteralPath $log -Force -ErrorAction SilentlyContinue
+          $process = Start-Process -FilePath $exe -WorkingDirectory $publish -PassThru
+          $deadline = [DateTime]::UtcNow.AddSeconds(20)
+          $started = $false
+          try {
+            while ([DateTime]::UtcNow -lt $deadline) {
+              $process.Refresh()
+              if ($process.HasExited) { throw "Latency Studio exited before startup completed (exit code $($process.ExitCode))." }
+              if (Test-Path -LiteralPath $log -PathType Leaf) {
+                $logText = Get-Content -LiteralPath $log -Raw
+                if ($logText -match '\[ERROR\]') {
+                  $tail = (Get-Content -LiteralPath $log | Select-Object -Last 30) -join "`n"
+                  throw "Latency Studio logged an error during startup:`n$tail"
+                }
+                if ($logText -match '\[INFO\].*Latency Studio .* started;') { $started = $true; break }
+              }
+              Start-Sleep -Milliseconds 250
+            }
+            if (-not $started) {
+              $tail = if (Test-Path -LiteralPath $log -PathType Leaf) { (Get-Content -LiteralPath $log | Select-Object -Last 30) -join "`n" } else { "No startup log was created at $log." }
+              throw "Latency Studio did not report successful startup within 20 seconds.`n$tail"
+            }
+            Start-Sleep -Seconds 2
+            $logText = Get-Content -LiteralPath $log -Raw
+            if ($logText -match '\[ERROR\]') {
+              $tail = (Get-Content -LiteralPath $log | Select-Object -Last 30) -join "`n"
+              throw "Latency Studio logged an error after startup:`n$tail"
+            }
+            $process.Refresh()
+            if ($process.HasExited) { throw "Latency Studio exited after startup (exit code $($process.ExitCode))." }
+            Write-Host "Latency Studio startup smoke test passed; no packet delay was enabled."
+          }
+          catch {
+            $detail = $_.Exception.ToString()
+            $annotation = $detail.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Host "::error title=Windows app startup smoke test failed::$annotation"
+            throw
+          }
+          finally {
+            $process.Refresh()
+            if (-not $process.HasExited) {
+              Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+              Wait-Process -Id $process.Id -Timeout 5 -ErrorAction SilentlyContinue
+            }
+          }
+
+      - name: Build portable ZIP and installer
+        shell: pwsh
+        run: |
+          $artifactDir = Join-Path $PWD "artifacts"
+          $publish = Join-Path $artifactDir "publish/win-x64"
+          $portable = Join-Path $artifactDir "portable/LatencyStudio"
+          New-Item -ItemType Directory -Force -Path $portable | Out-Null
+          Copy-Item (Join-Path $publish "*") -Destination $portable -Recurse -Force
+
+          $zip = Join-Path $artifactDir "LatencyStudio-Portable-$env:APP_VERSION-x64.zip"
+          Compress-Archive -Path (Join-Path $portable "*") -DestinationPath $zip -CompressionLevel Optimal -Force
+
+          $iscc = Join-Path ${env:ProgramFiles(x86)} "Inno Setup 6/ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            choco install innosetup --yes --no-progress
+            if ($LASTEXITCODE -ne 0) { throw "Could not install Inno Setup (exit code $LASTEXITCODE)." }
+          }
+          if (-not (Test-Path $iscc)) { throw "Inno Setup compiler was not found at $iscc." }
+
+          & $iscc "/DPublishDir=$publish" "/DOutputDir=$artifactDir" "/DAppVersion=$env:APP_VERSION" "installer/LatencyStudio.iss"
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup compilation failed with exit code $LASTEXITCODE." }
+
+      - name: Upload Windows download artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: LatencyStudio-Windows-x64
+          path: |
+            artifacts/LatencyStudio-Setup-*-x64.exe
+            artifacts/LatencyStudio-Portable-*-x64.zip
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload automated test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: LatencyStudio-Test-Results
+          path: "**/TestResults/*.trx"
+          if-no-files-found: ignore
+          retention-days: 14
+
+
+  publish-release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: windows-x64
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download Windows release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: LatencyStudio-Windows-x64
+          path: artifacts
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          gh release create "$GITHUB_REF_NAME" \
+            "artifacts/LatencyStudio-Setup-${version}-x64.exe" \
+            "artifacts/LatencyStudio-Portable-${version}-x64.zip" \
+            --title "Latency Studio ${GITHUB_REF_NAME}" \
+            --generate-notes
