@@ -599,7 +599,7 @@
                                         <StackPanel><TextBlock Text="ЖУРНАЛ" Style="{StaticResource SectionEyebrowStyle}" /><TextBlock Text="Диагностические события" FontSize="16" FontWeight="SemiBold" Margin="0,7,0,12" /></StackPanel>
                                         <Button HorizontalAlignment="Right" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding OpenLogsFolderCommand}" Content="Открыть файл журнала" />
                                     </Grid>
-                                    <TextBox Grid.Row="1" Style="{StaticResource DarkTextBoxStyle}" Text="{Binding RecentLogsText}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" FontSize="10" Padding="12" />
+                                    <TextBox Grid.Row="1" Style="{StaticResource DarkTextBoxStyle}" Text="{Binding RecentLogsText, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" FontSize="10" Padding="12" />
                                     <TextBlock Grid.Row="2" Foreground="{StaticResource MutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,9,0,0"><Run Text="Полный журнал: " /><Run Text="{Binding LogFilePath, Mode=OneWay}" /></TextBlock>
                                 </Grid>
                             </Border>
