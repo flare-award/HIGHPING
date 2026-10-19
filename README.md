@@ -6,7 +6,7 @@
 
 ## Состояние сборки и скачивание
 
-Успешный Windows workflow **Windows build and release**: [запуск #39156370497](https://github.com/flare-award/HIGHPING/actions/runs/39156370497) на commit `b93007a`. В нём прошли тесты и сборка решения, self-contained публикация win-x64, проверка SHA-256 официальных WinDivert 2.2.2 DLL/SYS и исходного архива, а также создание portable ZIP и Inno Setup установщика. Артефакт **LatencyStudio-Windows-x64** содержит:
+Успешный Windows workflow **Windows build and release**: [запуск #39196080070](https://github.com/flare-award/HIGHPING/actions/runs/39196080070) на commit `d87e175`. В нём прошли тесты и сборка решения, self-contained публикация win-x64, проверка SHA-256 официальных WinDivert 2.2.2 DLL/SYS и исходного архива, smoke test запуска WPF-окна без включения задержки, а также создание portable ZIP и Inno Setup установщика. Артефакт **LatencyStudio-Windows-x64** содержит:
 
 - `LatencyStudio-Setup-1.0.0-x64.exe` — установщик;
 - `LatencyStudio-Portable-1.0.0-x64.zip` — переносимый self-contained архив.

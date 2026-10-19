@@ -1,11 +1,12 @@
 # Отчёт о проверке
 
-Обновлено: 18 октября 2026 года.
+Обновлено: 19 октября 2026 года.
 
 ## Выполнено
 
 - Локально проверены синтаксические деревья C# и PowerShell, структура XML/YAML, соответствие имён WPF bindings; `git diff --check` проходит. Эти статические проверки не заменяют компиляцию или запуск.
-- Успешный Windows Actions run [#39156370497](https://github.com/flare-award/HIGHPING/actions/runs/39156370497), commit `b93007a`, runner `windows-2022` (Windows Server 2022): restore, тесты и сборка solution, self-contained `win-x64` publish, загрузка и SHA-256 проверка официальных WinDivert 2.2.2 x64 DLL/SYS, лицензии и соответствующего исходного архива, подготовка notices, создание portable ZIP и Inno Setup installer, загрузка артефактов.
+- Успешный Windows Actions run [#39196080070](https://github.com/flare-award/HIGHPING/actions/runs/39196080070), commit `d87e175`, runner `windows-2022` (Windows Server 2022): restore, тесты и сборка solution, self-contained `win-x64` publish, загрузка и SHA-256 проверка официальных WinDivert 2.2.2 x64 DLL/SYS, лицензии и соответствующего исходного архива, подготовка notices, успешный smoke test запуска WPF-окна без включения задержки, создание portable ZIP и Inno Setup installer, загрузка артефактов.
+- Smoke test запускает собранный exe, проверяет запись об успешном старте и отсутствие ошибок в журнале, затем закрывает процесс. Это не включает WinDivert capture и не проверяет фактическую задержку.
 - Run содержит `LatencyStudio-Windows-x64` (установщик и portable ZIP, хранится 30 дней) и `LatencyStudio-Test-Results` (14 дней). Ссылки для скачивания: страница указанного run → **Artifacts**.
 
 ## Не проверено
