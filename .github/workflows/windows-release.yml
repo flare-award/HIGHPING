@@ -110,6 +110,45 @@ jobs:
             Copy-Item -LiteralPath $sourcePath -Destination (Join-Path $noticeDir $notice.Target) -Force
           }
 
+      - name: Smoke test Windows app startup
+        shell: pwsh
+        run: |
+          $publish = Join-Path $PWD "artifacts/publish/win-x64"
+          $exe = Join-Path $publish "LatencyStudio.exe"
+          $log = Join-Path $env:LOCALAPPDATA "LatencyStudio/logs/app.log"
+          if (-not (Test-Path -LiteralPath $exe -PathType Leaf)) { throw "Published application was not found: $exe" }
+          Remove-Item -LiteralPath $log -Force -ErrorAction SilentlyContinue
+          $process = Start-Process -FilePath $exe -WorkingDirectory $publish -PassThru
+          $deadline = [DateTime]::UtcNow.AddSeconds(20)
+          $started = $false
+          try {
+            while ([DateTime]::UtcNow -lt $deadline) {
+              $process.Refresh()
+              if ($process.HasExited) { throw "Latency Studio exited before startup completed (exit code $($process.ExitCode))." }
+              if (Test-Path -LiteralPath $log -PathType Leaf) {
+                $logText = Get-Content -LiteralPath $log -Raw
+                if ($logText -match '\[ERROR\].*Ошибка запуска приложения') {
+                  $tail = (Get-Content -LiteralPath $log | Select-Object -Last 30) -join "`n"
+                  throw "Latency Studio logged a startup exception:`n$tail"
+                }
+                if ($logText -match '\[INFO\].*Latency Studio .* started;') { $started = $true; break }
+              }
+              Start-Sleep -Milliseconds 250
+            }
+            if (-not $started) {
+              $tail = if (Test-Path -LiteralPath $log -PathType Leaf) { (Get-Content -LiteralPath $log | Select-Object -Last 30) -join "`n" } else { "No startup log was created at $log." }
+              throw "Latency Studio did not report successful startup within 20 seconds.`n$tail"
+            }
+            Write-Host "Latency Studio startup smoke test passed; no packet delay was enabled."
+          }
+          finally {
+            $process.Refresh()
+            if (-not $process.HasExited) {
+              Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+              Wait-Process -Id $process.Id -Timeout 5 -ErrorAction SilentlyContinue
+            }
+          }
+
       - name: Build portable ZIP and installer
         shell: pwsh
         run: |

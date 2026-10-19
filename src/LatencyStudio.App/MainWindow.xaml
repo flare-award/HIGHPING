@@ -345,7 +345,7 @@
                                             <TextBlock Text="Измерение TCP RTT" FontSize="17" FontWeight="SemiBold" Margin="0,7,0,0" />
                                         </StackPanel>
                                         <StackPanel Grid.Row="1" VerticalAlignment="Center" Margin="0,5,0,5">
-                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Baseline">
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                                 <TextBlock Text="{Binding MeasuredTcpConnectText}" FontSize="35" FontWeight="Light" Foreground="#75D9FF" />
                                                 <TextBlock Text="  TCP connect" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
                                             </StackPanel>
