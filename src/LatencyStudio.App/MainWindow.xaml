@@ -470,7 +470,7 @@
                                                     </TextBox.Text>
                                                 </TextBox>
                                             </Grid>
-                                            <TextBlock FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,11,0,0"><Run Text="Оценка добавки к RTT: " /><Run Text="{Binding DirectionalDelayText}" /></TextBlock>
+                                            <TextBlock FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,11,0,0"><Run Text="Оценка добавки к RTT: " /><Run Text="{Binding DirectionalDelayText, Mode=OneWay}" /></TextBlock>
                                         </StackPanel>
                                     </Grid>
                                 </Border>
@@ -577,9 +577,9 @@
                                     <StackPanel Grid.Column="1" Margin="18,0,0,0">
                                         <TextBlock Text="СЕТЕВАЯ СТАТИСТИКА" Style="{StaticResource SectionEyebrowStyle}" />
                                         <TextBlock Text="{Binding ModeText}" Margin="0,10,0,0" />
-                                        <TextBlock Foreground="{StaticResource TextSecondaryBrush}" Margin="0,7,0,0"><Run Text="Успешно измеренных TCP-потоков: " /><Run Text="{Binding CalibratedFlowsText}" /></TextBlock>
-                                        <TextBlock Foreground="{StaticResource TextSecondaryBrush}" Margin="0,7,0,0"><Run Text="Передано без задержки: " /><Run Text="{Binding BypassedPacketsText}" /></TextBlock>
-                                        <TextBlock Foreground="{StaticResource TextSecondaryBrush}" Margin="0,7,0,0"><Run Text="Ошибки: " /><Run Text="{Binding ErrorCountText}" /></TextBlock>
+                                        <TextBlock Foreground="{StaticResource TextSecondaryBrush}" Margin="0,7,0,0"><Run Text="Успешно измеренных TCP-потоков: " /><Run Text="{Binding CalibratedFlowsText, Mode=OneWay}" /></TextBlock>
+                                        <TextBlock Foreground="{StaticResource TextSecondaryBrush}" Margin="0,7,0,0"><Run Text="Передано без задержки: " /><Run Text="{Binding BypassedPacketsText, Mode=OneWay}" /></TextBlock>
+                                        <TextBlock Foreground="{StaticResource TextSecondaryBrush}" Margin="0,7,0,0"><Run Text="Ошибки: " /><Run Text="{Binding ErrorCountText, Mode=OneWay}" /></TextBlock>
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -600,7 +600,7 @@
                                         <Button HorizontalAlignment="Right" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding OpenLogsFolderCommand}" Content="Открыть файл журнала" />
                                     </Grid>
                                     <TextBox Grid.Row="1" Style="{StaticResource DarkTextBoxStyle}" Text="{Binding RecentLogsText}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" FontSize="10" Padding="12" />
-                                    <TextBlock Grid.Row="2" Foreground="{StaticResource MutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,9,0,0"><Run Text="Полный журнал: " /><Run Text="{Binding LogFilePath}" /></TextBlock>
+                                    <TextBlock Grid.Row="2" Foreground="{StaticResource MutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,9,0,0"><Run Text="Полный журнал: " /><Run Text="{Binding LogFilePath, Mode=OneWay}" /></TextBlock>
                                 </Grid>
                             </Border>
                         </StackPanel>
@@ -614,7 +614,7 @@
                                         <TextBlock Text="〰" Foreground="#75D9FF" FontSize="36" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-6,0,0" />
                                     </Border>
                                     <TextBlock Text="Latency Studio" FontSize="28" FontWeight="Bold" />
-                                    <TextBlock Foreground="{StaticResource TextSecondaryBrush}" Margin="0,7,0,0"><Run Text="Версия " /><Run Text="{Binding AppVersionText}" /><Run Text=" · Windows x64" /></TextBlock>
+                                    <TextBlock Foreground="{StaticResource TextSecondaryBrush}" Margin="0,7,0,0"><Run Text="Версия " /><Run Text="{Binding AppVersionText, Mode=OneWay}" /><Run Text=" · Windows x64" /></TextBlock>
                                     <TextBlock Text="Системный инструмент для контролируемого добавления задержки к сетевым пакетам. Обрабатывает внешний IPv4/IPv6-трафик всех приложений через WinDivert; полезные данные пакетов не изменяются." TextWrapping="Wrap" FontSize="13" LineHeight="22" Margin="0,20,0,0" />
                                 </StackPanel>
                             </Border>
@@ -641,7 +641,7 @@
                                 <Grid>
                                     <StackPanel>
                                         <TextBlock Text="ИДЕНТИФИКАТОР СБОРКИ" Style="{StaticResource SectionEyebrowStyle}" />
-                                        <TextBlock FontSize="15" FontWeight="SemiBold" Margin="0,8,0,0"><Run Text="Latency Studio " /><Run Text="{Binding AppVersionText}" /></TextBlock>
+                                        <TextBlock FontSize="15" FontWeight="SemiBold" Margin="0,8,0,0"><Run Text="Latency Studio " /><Run Text="{Binding AppVersionText, Mode=OneWay}" /></TextBlock>
                                         <TextBlock Text="UAC запрашивается только при включении системного перехвата, если приложение не запущено от администратора." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,7,0,0" />
                                     </StackPanel>
                                     <Button HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding CopyVersionCommand}" Content="Скопировать версию" />

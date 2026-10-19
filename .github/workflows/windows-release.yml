@@ -127,9 +127,9 @@ jobs:
               if ($process.HasExited) { throw "Latency Studio exited before startup completed (exit code $($process.ExitCode))." }
               if (Test-Path -LiteralPath $log -PathType Leaf) {
                 $logText = Get-Content -LiteralPath $log -Raw
-                if ($logText -match '\[ERROR\].*Ошибка запуска приложения') {
+                if ($logText -match '\[ERROR\]') {
                   $tail = (Get-Content -LiteralPath $log | Select-Object -Last 30) -join "`n"
-                  throw "Latency Studio logged a startup exception:`n$tail"
+                  throw "Latency Studio logged an error during startup:`n$tail"
                 }
                 if ($logText -match '\[INFO\].*Latency Studio .* started;') { $started = $true; break }
               }
@@ -139,6 +139,14 @@ jobs:
               $tail = if (Test-Path -LiteralPath $log -PathType Leaf) { (Get-Content -LiteralPath $log | Select-Object -Last 30) -join "`n" } else { "No startup log was created at $log." }
               throw "Latency Studio did not report successful startup within 20 seconds.`n$tail"
             }
+            Start-Sleep -Seconds 2
+            $logText = Get-Content -LiteralPath $log -Raw
+            if ($logText -match '\[ERROR\]') {
+              $tail = (Get-Content -LiteralPath $log | Select-Object -Last 30) -join "`n"
+              throw "Latency Studio logged an error after startup:`n$tail"
+            }
+            $process.Refresh()
+            if ($process.HasExited) { throw "Latency Studio exited after startup (exit code $($process.ExitCode))." }
             Write-Host "Latency Studio startup smoke test passed; no packet delay was enabled."
           }
           catch {
